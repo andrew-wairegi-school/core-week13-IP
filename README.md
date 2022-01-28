@@ -1,8 +1,12 @@
-# Week 13: R - Kenyan entrepreneur - Cryptography course
+# Week 13: R - Russian brand - Customer characteristics
 
 ### By: Andrew Wairegi
 
-## Description
+## Description 1
+Updated project. With machine learning
+models.
+
+## Description 2
 Kira Plastinina has a russian brand. Which she wants to determine,
 the customer characteristics of her customer base. So I have analysed the data,
 using K means clustering. To be able to create the clusters. Since it will not be obvious in the
