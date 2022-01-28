@@ -1,0 +1,362 @@
+---
+title: "Cryptography Course AD Analysis"
+author: "Andrew Wairegi"
+date: "28/1/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Defining the Question
+### Specifying the question
+To help the kenyan entrepreneur to be able to determine who is more likely to click on the
+ad. From his website.
+
+### Defining Metric for succcess
+Being able to identify atleast 3 factors, that determine whether someone is going to click on his Ad.
+
+### Understanding the context
+The kenyan entrepreneur has held online courses on his site. But he is unsure if his new courses will do well.
+So he wants to analyse his existing data, to see what factors affect whether someone will click on his Ad or not.
+For a new course.
+
+### Experimental design
+1. Previewing the dataset
+2. Data cleaning
+3. Exploratory data analysis
+4. Conclusion
+5. Recommendation
+
+### Data relevance
+The data is relevant, because he has sourced it himself. He has gotten it from his own website.
+Which means that it is original data & is true. This means that it will not give us biased inferences.
+But will rather give us true data, based on the users on his website. This will allow us to answer his
+question of whether his users will click on the ad or not.  
+
+
+## Previewing the dataset
+```{R}
+library(data.table) # High-performance dataframe package
+library(tidyverse) # Data exploration & visualization Package
+library(psych) # A Psychometric statistics package
+library(corrr) # Correlation's package
+library(caret) # 
+
+# Loading the dataset 
+df = fread("advertising.csv")
+```
+
+```{R}
+# Checking the shape
+dim(df)
+```
+
+```{R}
+# Previewing the head
+head(df)
+```
+
+```{R}
+# Previewing the tail
+tail(df)
+```
+No dummy information, has been put into the dataset.
+
+```{R}
+# Showing the info
+str(df)
+```
+The numeric columns are in the right datatype.
+
+
+## Data cleaning
+
+```{R}
+# Checking for null values
+colSums(is.na(df))
+```
+
+```{R}
+# Checking for duplicate entries
+sum(duplicated(df))
+```
+
+```{R}
+# Checking for outliers
+
+# Daily time spent on Site
+boxplot(df$`Daily Time Spent on Site`)
+```
+  
+No outliers
+
+```{R}
+# Age
+boxplot(df$Age)
+```
+  
+No outliers
+
+```{R}
+# Area Income
+boxplot(df$`Area Income`)
+```
+  
+A few but do not look like outliers. They areas that had low income.
+So they appear as outliers, compared to areas that had higher incomes.
+
+```{R}
+# Daily Internet Usage
+boxplot(df$`Daily Internet Usage`)
+```
+  
+No outliers
+
+```{R}
+# Checking for Obvious inconsistencies
+print(table(df$City))
+```
+Doesn't look inconsistent, appears evenly spaced out.
+
+
+## Exploratory data analysis
+
+### Univariate analysis
+
+#### Descriptive statistics
+```{R}
+# Value counts - Clicked on Ad
+table(df$`Clicked on Ad`)
+```
+We had an equal number of not-clicked
+and clicked users
+
+
+```{R}
+# Describe method Keys:
+# vars - number of columns being described
+# n - number of rows
+# mean - mean of column
+# sd - standard deviation of column
+# min - minimum value in column
+# max - maximum value in column
+# range - difference between minimum and maximum value
+# se - standard error of column
+
+
+# Time spent on site described
+describe(df$`Daily Time Spent on Site`, interp = TRUE, skew = FALSE, trim = 0.1, quant = NULL, IQR = FALSE)
+```
+It looked like most users spent around 65 minutes on the site.
+Which meant, that users were more skewed towards the higher side of the time
+than the lower side.
+
+```{R}
+# Area income described
+describe(df$`Area Income`, interp = TRUE, skew = FALSE, trim = 0.1, quant = NULL, IQR = FALSE)
+```
+There is a lot of variation in terms of area income as we have
+seen from the boxplot. This means there wee many people from different areas.
+This can be seen in the standard deviation amount, as it is almost as high as the "min".
+This can be expected, as anyone can visit his site from around the world. So there are 
+many people from both high-income countries, and low-income countries.
+
+
+```{R}
+# Daily internet usage described
+describe(df$`Daily Internet Usage`, interp = TRUE, skew = FALSE, trim = 0.1, quant = NULL, IQR = FALSE)
+```
+It looks like the daily internet usage, ranges from 104 to 269. The mean is around
+180, and the standard deviation is only 43. So that means it is probably normally distributed
+around the mean.
+
+```{R}
+# Mode function
+getMode <- function(v) {
+   uniqv <- unique(v)
+   uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+```
+
+
+```{R}
+minAge = min(df$Age)
+maxAge = max(df$Age)
+meanAge = mean(df$Age)
+modeAge = getMode(df$Age)
+
+cat("Age min: ", minAge, "\n")
+cat("Age max: ", maxAge, "\n")
+cat("Age mean: ", meanAge, "\n")
+cat("Age mode: ", modeAge)
+```
+For age it looks like the min in 19, which would be expected. 
+Since this is learning blog. While the mean is 36, which is also Ok. 
+It doesn't look abnormal. Then the max is 61 years.
+
+#### Visualizations
+
+```{R}
+barplot(table(df$`Clicked on Ad`), main = "Clicked on Ad")
+```
+  
+There was an even number of users who clicked
+on the Ad and did not.
+
+```{R}
+hist(df$Age, breaks = 17, main = "Histogram of Age", xlab = "Age (minutes)")
+```
+  
+It looks like most users are around 30 years. Then it declines from
+there.
+
+```{R}
+barplot(table(df$Male), main = "Gender counts", xlab = "Male")
+```
+  
+There were more females than males in the study.
+
+```{R}
+barplot(table(df$Country), main = "Country counts")
+```
+  
+There were several users from different countries.
+Which means our analysis will allow us to collect data from different countries.
+Which means it can be used in other areas. Where any website is being used to determine
+whether someone will click on an Ad or not.
+
+```{R}
+# Distribution plots
+
+hist(df$`Daily Time Spent on Site`, breaks = 30, main = "Histogram of Daily time spent on site", xlab = "Time spent (minutes)")
+```
+  
+It's generally evenly distributed. However there are more people
+who spent around 80 minutes. Than there are that spent 52 minutes.
+This means there was a wide collection of users from the survey.
+
+```{R}
+hist(df$`Area Income`, breaks = 23, main = "Histogram of Area Income", xlab = "Income ($)")
+```
+  
+Looks like it's normally distributed. However it seems to be leaning
+towards 64,000. This means that those on the blog, generally had more money.
+So they were able to afford the things being offered on the blog. For example,
+the courses that he wants to advertise.
+
+```{R}
+hist(df$`Daily Internet Usage`, breaks = 20, main = "Histogram of Daily Internet Usage", xlab = "Daily internet usage (minutes)")
+```
+  
+It seems that those using the internet. Peaked at 130 minutes. Then
+went down, and peaked again at 220 minutes. THis means there are generally two types
+of users. Those that used the internet for 130 miuntes a day, short users. Those that use
+it for 220 minutes, long users.
+
+
+### Bivariate analysis
+
+```{R}
+plot(df$Age, df$`Clicked on Ad`, main = "Clicked on AD by Age", xlab = "Age", ylab = "Clicked on Ad")
+```
+  
+Those that were older were more likely to click
+on the Ad.
+
+```{R}
+plot(df$`Area Income`, df$`Clicked on Ad`, main = "Clicked on AD by Area Income", xlab = "Area Income", ylab = "Clicked on Ad")
+```
+  
+Those with less income were more likely to click on 
+the Ad. most probably because they spent more time on the internet
+
+```{R}
+plot(df$`Daily Time Spent on Site`, df$`Clicked on Ad`, main = "Clicked on AD by Time spent on Site", xlab = "Daily time spent on Site", ylab = "Clicked on Ad")
+```
+  
+Those that spent less time. Were more likely
+to click on the Ad.
+
+```{R}
+plot(df$`Daily Internet Usage`, df$`Clicked on Ad`, main = "Clicked on AD by Internet Usage", xlab = "Daily internet usage", ylab = "Clicked on Ad")
+```
+  
+Those that spent less time, were more likely to click
+on the Ad.
+
+```{R}
+head(df)
+```
+
+
+## Implementing the solution
+
+### Train test split
+
+```{R}
+set.seed(1100)
+random <- runif(150)
+df_random = df[order(random),]
+```
+
+```{R}
+dim(df_random)
+```
+```{R}
+train = df_random[1:130,]
+x_test = df_random[131:150]
+y_test = as.factor(df_random[131:150]$`Clicked on Ad`)
+```
+
+### Modelling
+
+```{R}
+model = glm(formula = `Clicked on Ad` ~ `Daily Time Spent on Site` + Age + `Area Income` + `Daily Internet Usage` + Male, data = train, family = binomial(link = "logit"), maxit = 100000)
+```
+
+### Prediction
+
+```{R}
+probabilities = predict(model, x_test, type="response")
+y_pred <- ifelse(probabilities > 0.5, 1, 0)
+```
+
+```{R}
+y_pred = as.factor(y_pred) 
+```
+
+### Evaluation
+
+```{R}
+# Getting performance scores
+confusionMatrix = confusionMatrix(y_pred, y_test)
+# Precision of positive values
+confusionMatrix$byClass['Pos Pred Value']
+```
+```{R}
+# Precision of negative values
+confusionMatrix$byClass['Neg Pred Value']
+```
+The accuracy of the model is 100%, which is good.
+Now I need to give the advice on the factors that the business can use.
+
+
+## Conclusion
+
+It seems that the only variable that had a positive correlation on the "clicked on Ad"
+field, was Age. This means that to determine whether someone will click on an Ad. The kenyan entrepreneur also needs to look at those that spent less amount of time on the site. As well as on the internet. Then those that live in poorer countries. This in combination with age, is a good predictor of who will click on the Ad.  
+
+So the main predictor variables are:  
+1. Daily internet usage - negative  
+2. Daily time spent on site - negative  
+3. Age - positive  
+4. Area income - negative  
+
+These are the variables that the Kenyan entrepreneur needs to look out for. Where negative
+means, low values are more likely to click on the ad. Whereas positive correlations, mean higher values produce a chance for someone to click on the ad.
+
+## Recommendation
+
+I recommend that the kenyan entrepreneur targets his ads. To those who live in low income areas. Then he can further target it to those who use the internet less. By increasing the number of times it appears blogs. So after finding the blogs that appeal most to users from low income areas, he can increase the frequency. Then he can offer promotions for those courses. Since older people prefer promotions than paying full price. These are the steps I would recommend to the kenyan entrepreneur, to increase the sales of his course on his site.

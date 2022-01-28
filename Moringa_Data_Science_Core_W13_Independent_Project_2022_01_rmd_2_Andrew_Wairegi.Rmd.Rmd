@@ -1,0 +1,408 @@
+---
+title: "Customer characteristics - E-commerce"
+author: "Andrew Wairegi"
+date: "28/1/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Defining the Question
+### Specifying the question
+To help the kenyan entrepreneur to be able to determine who is more likely to click on the
+ad. From his website.
+
+### Defining Metric for succcess
+Being able to identify atleast 3 factors, that determine whether someone is going to click on his Ad.
+
+### Understanding the context
+The kenyan entrepreneur has held online courses on his site. But he is unsure if his new courses will do well.
+So he wants to analyse his existing data, to see what factors affect whether someone will click on his Ad or not.
+For a new course.
+
+### Experimental design
+1. Previewing the dataset
+2. Data cleaning
+3. Exploratory data analysis
+4. Conclusion
+5. Recommendation
+
+### Data relevance
+The data is relevant, because he has sourced it himself. He has gotten it from his own website.
+Which means that it is original data & is true. This means that it will not give us biased inferences.
+But will rather give us true data, based on the users on his website. This will allow us to answer his
+question of whether his users will click on the ad or not.  
+
+## Previewing the dataset
+```{R}
+library(data.table) # High-performance dataframe package
+library(tidyverse) # Data exploration & visualization Package
+library(psych) # A Psychometric statistics package
+library(corrr) # Correlation's package
+library(dplyr) 
+
+getMode <- function(v) {     # Get mode function
+   uniqv <- unique(v)
+   uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+
+# Loading the dataset 
+df = fread("online_shoppers_intention.csv")
+```
+
+```{R}
+# Checking the shape
+dim(df)
+```
+
+```{R}
+# Previewing the head
+head(df)
+```
+
+```{R}
+# Previewing the tail
+tail(df)
+```
+
+```{R}
+# Showing the info
+str(df)
+```
+
+```{R}
+# Checking for null values
+colSums(is.na(df))
+```
+```{R}
+# Removing null values
+df = na.omit(df)
+
+# Checking
+colSums(is.na(df))
+```
+
+```{R}
+# Checking for duplicate entries
+sum(duplicated(df))
+```
+
+It's possible that we'll have duplicated visitors.
+So I believe since the duplication count is low. There are no duplicates.
+
+```{R}
+# Checking for outliers
+
+# Administrative duration
+boxplot(df$Administrative_Duration)
+```
+
+Not abnormal as some users may spend
+more time on the website. Than others
+
+```{R}
+# Informational duration
+boxplot(df$Informational_Duration)
+```
+
+Not abnormal, as it is normal for some users to spend
+more time than others. Also since this is informational
+site viewing. It is normal that the max is much lower than administrative
+site viewing.
+
+```{R}
+# Informational duration
+boxplot(df$ProductRelated_Duration)
+```
+
+Product related viewing, had a lot more disparity.
+But this is because people may have more interest in one product,
+than another. So it may appear that one product is viewed more than
+the other.
+
+## Exploratory data analysis
+
+### Univariate analysis
+```{R}
+barplot(table(df$Administrative), main = "Administrative counts")
+```
+Max number of administrative pages visited was 27
+
+```{R}
+hist(table(df$Administrative_Duration), breaks = 18,  main = "Total Administrative site duration", xlab = "Site duration")
+```
+
+Most people spent less than 500 minutes on Administrative sites.
+On each visit.
+
+```{R}
+barplot(table(df$Informational), main = "Informational counts")
+```
+The highest number of sites visited for information.
+Were 24.
+
+```{R}
+hist(table(df$Informational_Duration), breaks = 18,  main = "Total Informational site duration", xlab = "Site duration")
+```
+
+Most people spent less than 250 minutes on informational
+sites. In each visit.
+
+```{R}
+barplot(table(df$ProductRelated), main = "Product Related counts")
+```
+
+The maximum number of pages a visitor visited was 449 sites.
+Bu most visited between 16-34 sites.
+
+```{R}
+hist(table(df$ProductRelated_Duration), breaks = 20,  main = "Total Product related site duration", xlab = "Site duration")
+```
+Most people spent less than 50 minutes, looking at products.
+
+```{R}
+# Describe method Keys:
+# vars - number of columns being described
+# n - number of rows
+# mean - mean of column
+# sd - standard deviation of column
+# min - minimum value in column
+# max - maximum value in column
+# range - difference between minimum and maximum value
+# se - standard error of column
+
+
+# Administrative duration described
+describe(df$Administrative_Duration, interp = TRUE, skew = FALSE, trim = 0.1, quant = NULL, IQR = FALSE)
+```
+
+Mean was 80, and max was 3398 miuntes. Which meant someone must have been
+browsing the site hard. For information.
+
+```{R}
+# Informational duration described
+describe(df$Informational_Duration, interp = TRUE, skew = FALSE, trim = 0.1, quant = NULL, IQR = FALSE)
+```
+
+The mean was 34. Which is normal.
+As most people won't be looking for too much informational information
+on the site. As most of it should be simple, and easy to understand.
+
+```{R}
+# Product related duration described
+describe(df$ProductRelated_Duration, interp = TRUE, skew = FALSE, trim = 0.1, quant = NULL, IQR = FALSE)
+```
+The mean was 1196 minutes. Which is not too high.
+As someone may look at a lot of products while they are on the site.
+
+```{R}
+# Previewing the head
+head(df)
+```
+
+```{R}
+barplot(table(df$Region), main = "Regions")
+```
+
+Regions of the users, seem to be evenly distributed so this is 
+normal.
+
+```{R}
+barplot(table(df$Browser), main = "Browser used")
+```
+
+There were many browsers used. However the most dominant seemed to be browser
+2 & 1.
+
+```{R}
+barplot(table(df$OperatingSystems), main = "Operating Systems")
+```
+
+Most people were on the 3 browsers. The first three,
+then the others were on other less known browsers.
+
+### Bivariate analysis
+
+```{R}
+correlation = correlate(select_if(df, is.numeric))
+correlation
+# focus(correlation, `Clicked on Ad`)
+```
+
+It seems that some columns are more correlated than others.
+Which means we may be able to get a good seperation from the clustering
+machine learning algorithm.
+
+```{R}
+plot(df$Administrative_Duration, df$Administrative , main = "Administration duration", xlab = "Administrative Duration", ylab = "Administrative pages")
+```
+
+It seems people were more focused in their searches.
+And did not spend a bunch of time on pages, to spend time.
+
+```{R}
+plot(df$Informational_Duration, df$Informational , main = "Informational duration", xlab = "Informaitonal duration", ylab = "Information pages")
+```
+
+It seems not many pages were browsed when looking for information.
+This means that the users knew were to find their information on the page.
+
+```{R}
+plot(df$ProductRelated_Duration, df$ProductRelated , main = "Product related duration", xlab = "Product related duration", ylab = "Product pages")
+```
+
+It seems the more pages. The more time was spent.
+Which is normal. As it means that the users were able to find more interesting
+pages on products. While they were shopping.
+
+```{R}
+head(df)
+```
+
+# Implementing the solution
+```{R}
+# Since there are three types of customers. I believe we should group the data
+# into 3 clusters. As this will allow us to get the most information from the dataset.
+# As opposed to clustering it into different groups. Based on what we think the different
+# customers are like. In these segments.
+
+kmeans = kmeans(select_if(df, is.numeric), centers = 3, iter.max = 1500)
+```
+
+```{R}
+kmeans$centers 
+```
+There are three clusters that were found.
+Which should identify visits that were, Administrative, Informational, or Product related.
+It seems the center, are around the means of each of these categories
+With:
+1 - Administrative users
+2 - Informational users
+3 - Product related users
+
+This makes sense. As most users may visit
+a variety of pages. So that means the means are not exact to the centres of these
+centroids.
+
+
+```{R}
+kmeans$size 
+```
+In terms of counts. Centroid 1 had 1975 users.
+Then centroid 2 had 10134 users. Then centroid 3 had
+207 users.
+
+```{R}
+# Viewing the heads of each cluster
+
+# Cluster 1 - Administrative
+cluster1 = df[kmeans$cluster == 1]
+head(cluster1)
+```
+```{R}
+# Cluster 2 - Informational
+cluster2 = df[kmeans$cluster == 2]
+head(cluster2)
+```
+```{R}
+# Cluster 3 - Product related
+cluster3 = df[kmeans$cluster == 3]
+head(cluster3)
+```
+## Exploratory data analysis
+### Cluster 1
+
+```{R}
+describe(cluster1$BounceRates, interp = TRUE, skew = FALSE, trim = 0.1, quant = NULL, IQR = FALSE)
+```
+Most people had a bounce rate of 1%. For administrative users
+which is normal.
+
+```{R}
+barplot(table(cluster1$Region), main = "Regions")
+```
+The regions are distributed the same as before.
+So that means those looking for administrative data were from
+all regions.
+
+### Cluster 2
+
+```{R}
+describe(cluster2$BounceRates, interp = TRUE, skew = FALSE, trim = 0.1, quant = NULL, IQR = FALSE)
+```
+Bounce rates were a bit higher for informational users.
+But this is because they may be looking at the wrong page. So they need
+to go and see another page. To get the information they want.
+
+```{R}
+barplot(table(cluster2$Region), main = "Regions")
+```
+Again information users are from all regions.
+So that means they may not be seperated from the administrative users.
+Which means all users, need information from the website.
+
+### Cluster 3
+
+```{R}
+hist(table(cluster3$PageValues), breaks = 15,  main = "Number of webpages visited before Transcation", xlab = "Page values")
+```
+
+It seems we had easy users, who didn't visit more than 5 pages.
+While we had some users which visited over 80 pages. Before making a purchase.
+
+```{R}
+quantile(cluster3$PageValues)
+```
+Most people visited between 1 & 5 pages.
+While those that visited no pages. May have not made a purchase.
+But did view product pages.
+
+```{R}
+getMode(cluster3$Month)
+```
+Most people did this shopping in around November.
+Which corresponds to our belief that this is the product viewing
+cluster.
+
+```{R}
+describe(cluster3$BounceRates, interp = TRUE, skew = FALSE, trim = 0.1, quant = NULL, IQR = FALSE)
+```
+Bounce rates were low, as people knew what sites to visit.
+This can be seen in the mean & max
+
+```{R}
+barplot(table(cluster3$Region), main = "Regions")
+```
+There were fewer product viewing users on the website.
+However, they were evenly distributed between the countries.
+So that means all the clusters were accurately.
+As it allowed us to get users from each of the regions
+in each cluster.
+
+
+# Challenging the Solution
+
+The kmeans clustering method is the best for clustering items. Where we do not
+know the number of clusters. However, if we used hierarchial clustering. We Would be able
+to get more information from the different subsets within the sets we have already identified.
+This would be possible even without adding more data. As we are using to points to create the clusters.
+However it would be much harder to identify the clusters. As you would need domain knowledge.
+However K means clustering is enough for analysis. As we just want to identify main groups.
+So Kira Plastinina should be happy with our findings.
+
+# Follow up Questions
+## a) Did we have the right data?
+yes, we had the right data.
+As it allowed us to find the clusters from within the e-commerce
+site. This allowed us to get various insights from the data.
+
+## b) Do we need other data to answer our question?
+No, because we were able to get the appropriate insights from our
+data. However we can add more data to our data. If we want to get more insights
+from it.
+
+## c) Did we have the right question?
+Yes, because we want to identify different trends within the different
+sectors within the company.
