@@ -41,7 +41,7 @@ library(data.table) # High-performance dataframe package
 library(tidyverse) # Data exploration & visualization Package
 library(psych) # A Psychometric statistics package
 library(corrr) # Correlation's package
-library(dplyr) 
+library(dplyr) # A Data manipulation package
 
 getMode <- function(v) {     # Get mode function
    uniqv <- unique(v)
