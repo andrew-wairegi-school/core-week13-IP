@@ -31,7 +31,7 @@ There are no known issues / bugs
 4. Psych - A Psychometric statistics Package
 5. Corrr - A Correlation Package
 6. Dplyr - A Data manipulation package
-7. Caret - A Classification adn Regression package
+7. Caret - A Classification and Regression package
 
 ### License
 Copyright (c) 2022 **Andrew Wairegi**
